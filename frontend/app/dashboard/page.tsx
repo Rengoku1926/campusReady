@@ -1,9 +1,8 @@
-import Sidebar from '@/components/Sidebar';
-
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+// app/dashboard/page.tsx
+export default function DashboardPage() {
   return (
     <div className="flex h-screen">
-Dashboard
+      Dashboard Content
     </div>
   );
 }
