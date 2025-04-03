@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: {
     id: number;
     email: string;

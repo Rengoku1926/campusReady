@@ -46,16 +46,18 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // Get single conversion
-router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
+router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) : Promise<void> => {
   try {
     const conversion = await Conversion.findById(req.params.id);
     
     if (!conversion) {
-      return res.status(404).json({ message: 'Conversion not found' });
+      res.status(404).json({ message: 'Conversion not found' });
+      return 
     }
     
     if (conversion.userId !== req.user?.id) {
-      return res.status(403).json({ message: 'Unauthorized' });
+      res.status(403).json({ message: 'Unauthorized' });
+      return 
     }
     
     res.json(conversion);
@@ -66,10 +68,11 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // Upload and create new conversion
-router.post('/', authMiddleware, upload.single('file'), async (req: AuthRequest, res: Response) => {
+router.post('/', authMiddleware, upload.single('file'), async (req: AuthRequest, res: Response) : Promise<void> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      res.status(400).json({ message: 'No file uploaded' });
+      return 
     }
     
     const conversion = await Conversion.create({
