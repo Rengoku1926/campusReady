@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +46,10 @@ export default function ConversionResultPage() {
 
   const [conversion, setConversion] = useState<Conversion | null>(null);
   const [loading, setLoading] = useState(true);
-  const [parsedXml, setParsedXml] = useState<{ metadata: Metadata; pages: Page[] } | null>(null);
+  const [parsedXml, setParsedXml] = useState<{
+    metadata: Metadata;
+    pages: Page[];
+  } | null>(null);
   const [copied, setCopied] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -66,7 +69,7 @@ export default function ConversionResultPage() {
           }
         );
         setConversion(response.data);
-        
+
         // Parse XML if conversion is completed
         if (response.data.status === "completed" && response.data.xmlContent) {
           parseXmlContent(response.data.xmlContent);
@@ -99,14 +102,17 @@ export default function ConversionResultPage() {
     try {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
-      
+
       // Parse metadata
       const metadataElement = xmlDoc.getElementsByTagName("metadata")[0];
       const metadata: Metadata = {
         title: getElementTextContent(metadataElement, "title"),
         author: getElementTextContent(metadataElement, "author"),
         creationDate: getElementTextContent(metadataElement, "creationDate"),
-        pageCount: parseInt(getElementTextContent(metadataElement, "pageCount"), 10)
+        pageCount: parseInt(
+          getElementTextContent(metadataElement, "pageCount"),
+          10
+        ),
       };
 
       // Parse pages
@@ -115,7 +121,10 @@ export default function ConversionResultPage() {
 
       for (let i = 0; i < pageElements.length; i++) {
         const pageElement = pageElements[i];
-        const pageNumber = parseInt(pageElement.getAttribute("number") || "0", 10);
+        const pageNumber = parseInt(
+          pageElement.getAttribute("number") || "0",
+          10
+        );
         const sections: Section[] = [];
 
         // Parse headers
@@ -125,7 +134,7 @@ export default function ConversionResultPage() {
           sections.push({
             type: "header",
             content: header.textContent || "",
-            level: parseInt(header.getAttribute("level") || "1", 10)
+            level: parseInt(header.getAttribute("level") || "1", 10),
           });
         }
 
@@ -134,7 +143,7 @@ export default function ConversionResultPage() {
         for (let j = 0; j < paragraphs.length; j++) {
           sections.push({
             type: "paragraph",
-            content: paragraphs[j].textContent || ""
+            content: paragraphs[j].textContent || "",
           });
         }
 
@@ -144,15 +153,15 @@ export default function ConversionResultPage() {
           const list = lists[j];
           const items = list.getElementsByTagName("item");
           const listItems: string[] = [];
-          
+
           for (let k = 0; k < items.length; k++) {
             listItems.push(items[k].textContent || "");
           }
-          
+
           sections.push({
             type: "list",
             content: "",
-            items: listItems
+            items: listItems,
           });
         }
 
@@ -165,7 +174,10 @@ export default function ConversionResultPage() {
     }
   };
 
-  const getElementTextContent = (parentElement: Element, tagName: string): string => {
+  const getElementTextContent = (
+    parentElement: Element,
+    tagName: string
+  ): string => {
     const element = parentElement.getElementsByTagName(tagName)[0];
     return element ? element.textContent || "" : "";
   };
@@ -175,10 +187,7 @@ export default function ConversionResultPage() {
     const element = document.createElement("a");
     const file = new Blob([conversion.xmlContent], { type: "text/xml" });
     element.href = URL.createObjectURL(file);
-    element.download = `${conversion.originalFileName.replace(
-      ".pdf",
-      ""
-    )}.xml`;
+    element.download = `${conversion.originalFileName.replace(".pdf", "")}.xml`;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
@@ -194,11 +203,11 @@ export default function ConversionResultPage() {
   // Function to colorize XML tags for display
   const colorizeXml = (xml: string) => {
     if (!xml) return "";
-    
+
     const tagRegex = /(<\/?)([^>\s]+)([^>]*)(\/?>)/g;
     const attrRegex = /(\w+)=["']([^"']*)["']/g;
     const textRegex = />([^<]+)</g;
-    
+
     let result = xml
       .replace(tagRegex, (match, startTag, tagName, attrs, endTag) => {
         // Colorize tag name
@@ -208,40 +217,55 @@ export default function ConversionResultPage() {
         // Colorize attributes
         return `<span class="text-purple-500">${name}</span>="<span class="text-green-500">${value}</span>"`;
       });
-    
+
     return result;
   };
 
   const highlightSearch = (text: string) => {
     if (!searchText || !text) return { __html: text };
-    
-    const regex = new RegExp(`(${searchText})`, 'gi');
-    const highlighted = text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
-    
+
+    const regex = new RegExp(`(${searchText})`, "gi");
+    const highlighted = text.replace(
+      regex,
+      '<mark class="bg-yellow-200">$1</mark>'
+    );
+
     return { __html: highlighted };
   };
 
   const renderSection = (section: Section) => {
     switch (section.type) {
       case "header":
-        const HeaderTag = `h${section.level || 1}` as keyof JSX.IntrinsicElements;
+        const HeaderTag = `h${Math.min(Math.max(section.level || 1, 1), 6)}` as
+          | "h1"
+          | "h2"
+          | "h3"
+          | "h4"
+          | "h5"
+          | "h6";
         return (
           <HeaderTag className="font-bold mt-4 mb-2">
-            <Badge className="mr-2 bg-blue-500 hover:bg-blue-600">H{section.level}</Badge>
+            <Badge className="mr-2 bg-blue-500 hover:bg-blue-600">
+              H{section.level}
+            </Badge>
             {section.content}
           </HeaderTag>
         );
       case "paragraph":
         return (
           <div className="mb-3">
-            <Badge className="mr-2 mb-1 bg-green-500 hover:bg-green-600">P</Badge>
+            <Badge className="mr-2 mb-1 bg-green-500 hover:bg-green-600">
+              P
+            </Badge>
             <p>{section.content}</p>
           </div>
         );
       case "list":
         return (
           <div className="mb-3">
-            <Badge className="mr-2 mb-1 bg-orange-500 hover:bg-orange-600">LIST</Badge>
+            <Badge className="mr-2 mb-1 bg-orange-500 hover:bg-orange-600">
+              LIST
+            </Badge>
             <ul className="list-disc pl-6">
               {section.items?.map((item, index) => (
                 <li key={index}>{item}</li>
@@ -257,11 +281,17 @@ export default function ConversionResultPage() {
   const renderStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge className="bg-green-500 hover:bg-green-600">{status}</Badge>;
+        return (
+          <Badge className="bg-green-500 hover:bg-green-600">{status}</Badge>
+        );
       case "processing":
-        return <Badge className="bg-blue-500 hover:bg-blue-600">{status}</Badge>;
+        return (
+          <Badge className="bg-blue-500 hover:bg-blue-600">{status}</Badge>
+        );
       case "pending":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600">{status}</Badge>;
+        return (
+          <Badge className="bg-yellow-500 hover:bg-yellow-600">{status}</Badge>
+        );
       case "failed":
         return <Badge className="bg-red-500 hover:bg-red-600">{status}</Badge>;
       default:
@@ -359,7 +389,9 @@ export default function ConversionResultPage() {
                   {parsedXml && (
                     <div>
                       <div className="mb-6 pb-4 border-b">
-                        <h1 className="text-2xl font-bold mb-2">{parsedXml.metadata.title}</h1>
+                        <h1 className="text-2xl font-bold mb-2">
+                          {parsedXml.metadata.title}
+                        </h1>
                         <p className="text-sm text-muted-foreground">
                           Author: {parsedXml.metadata.author}
                         </p>
@@ -372,7 +404,10 @@ export default function ConversionResultPage() {
                       {parsedXml.pages.map((page) => (
                         <div key={page.number} className="mb-8">
                           <div className="flex items-center mb-2">
-                            <Badge variant="outline" className="text-xs uppercase tracking-wider">
+                            <Badge
+                              variant="outline"
+                              className="text-xs uppercase tracking-wider"
+                            >
                               Page {page.number}
                             </Badge>
                           </div>
@@ -394,56 +429,103 @@ export default function ConversionResultPage() {
                     <div>
                       <div className="mb-4">
                         <h3 className="font-bold mb-2 flex items-center">
-                          <Badge className="mr-2 bg-purple-500 hover:bg-purple-600">Metadata</Badge>
+                          <Badge className="mr-2 bg-purple-500 hover:bg-purple-600">
+                            Metadata
+                          </Badge>
                           Document Information
                         </h3>
                         <div className="bg-muted p-3 rounded">
-                          <div><strong>Title:</strong> {parsedXml.metadata.title}</div>
-                          <div><strong>Author:</strong> {parsedXml.metadata.author}</div>
-                          <div><strong>Creation Date:</strong> {parsedXml.metadata.creationDate}</div>
-                          <div><strong>Page Count:</strong> {parsedXml.metadata.pageCount}</div>
+                          <div>
+                            <strong>Title:</strong> {parsedXml.metadata.title}
+                          </div>
+                          <div>
+                            <strong>Author:</strong> {parsedXml.metadata.author}
+                          </div>
+                          <div>
+                            <strong>Creation Date:</strong>{" "}
+                            {parsedXml.metadata.creationDate}
+                          </div>
+                          <div>
+                            <strong>Page Count:</strong>{" "}
+                            {parsedXml.metadata.pageCount}
+                          </div>
                         </div>
                       </div>
-                      
+
                       <h3 className="font-bold mb-2 flex items-center">
-                        <Badge className="mr-2 bg-blue-500 hover:bg-blue-600">Content</Badge>
+                        <Badge className="mr-2 bg-blue-500 hover:bg-blue-600">
+                          Content
+                        </Badge>
                         Pages
                       </h3>
                       {parsedXml.pages.map((page) => (
                         <div key={page.number} className="mb-4">
                           <h4 className="font-semibold">
-                            <Badge variant="outline" className="mr-2">Page {page.number}</Badge>
+                            <Badge variant="outline" className="mr-2">
+                              Page {page.number}
+                            </Badge>
                           </h4>
                           <div className="pl-4">
                             {page.sections.map((section, index) => (
-                              <div key={index} className="mb-2 bg-muted/50 p-2 rounded">
+                              <div
+                                key={index}
+                                className="mb-2 bg-muted/50 p-2 rounded"
+                              >
                                 <div className="text-xs font-medium text-muted-foreground">
                                   {section.type === "header" && (
-                                    <Badge size="sm" className="mr-1 bg-blue-500 hover:bg-blue-600">H{section.level}</Badge>
+                                    <Badge
+                                      
+                                      className="mr-1 bg-blue-500 hover:bg-blue-600"
+                                    >
+                                      H{section.level}
+                                    </Badge>
                                   )}
                                   {section.type === "paragraph" && (
-                                    <Badge size="sm" className="mr-1 bg-green-500 hover:bg-green-600">P</Badge>
+                                    <Badge
+                                      
+                                      className="mr-1 bg-green-500 hover:bg-green-600"
+                                    >
+                                      P
+                                    </Badge>
                                   )}
                                   {section.type === "list" && (
-                                    <Badge size="sm" className="mr-1 bg-orange-500 hover:bg-orange-600">LIST</Badge>
+                                    <Badge
+                                      
+                                      className="mr-1 bg-orange-500 hover:bg-orange-600"
+                                    >
+                                      LIST
+                                    </Badge>
                                   )}
                                 </div>
                                 {section.type === "list" ? (
                                   <div>
-                                    <div className="font-medium">Items: {section.items?.length}</div>
+                                    <div className="font-medium">
+                                      Items: {section.items?.length}
+                                    </div>
                                     <div className="pl-4">
-                                      {section.items?.slice(0, 3).map((item, i) => (
-                                        <div key={i} className="text-sm truncate">{item}</div>
-                                      ))}
+                                      {section.items
+                                        ?.slice(0, 3)
+                                        .map((item, i) => (
+                                          <div
+                                            key={i}
+                                            className="text-sm truncate"
+                                          >
+                                            {item}
+                                          </div>
+                                        ))}
                                       {(section.items?.length || 0) > 3 && (
                                         <div className="text-sm text-muted-foreground">
-                                          ...and {(section.items?.length || 0) - 3} more
+                                          ...and{" "}
+                                          {(section.items?.length || 0) - 3}{" "}
+                                          more
                                         </div>
                                       )}
                                     </div>
                                   </div>
                                 ) : (
-                                  <div className="text-sm truncate">{section.content}</div>
+                                  <div className="text-sm truncate">
+                                    {section.content}
+                                  </div>
                                 )}
                               </div>
                             ))}
@@ -468,7 +550,7 @@ export default function ConversionResultPage() {
                             placeholder="Search in XML..."
                             className="p-1 pl-2 bg-transparent outline-none w-40"
                           />
-                          <button 
+                          <button
                             onClick={() => {
                               setSearchText("");
                               setShowSearch(false);
@@ -479,9 +561,9 @@ export default function ConversionResultPage() {
                           </button>
                         </div>
                       ) : (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => setShowSearch(true)}
                           className="flex items-center"
                         >
@@ -493,7 +575,11 @@ export default function ConversionResultPage() {
                         {parsedXml?.pages.length || 0} Pages
                       </Badge>
                       <Badge className="bg-purple-500">
-                        Elements: {parsedXml?.pages.reduce((acc, page) => acc + page.sections.length, 0) || 0}
+                        Elements:{" "}
+                        {parsedXml?.pages.reduce(
+                          (acc, page) => acc + page.sections.length,
+                          0
+                        ) || 0}
                       </Badge>
                     </div>
                     <div className="flex space-x-2">
@@ -516,21 +602,32 @@ export default function ConversionResultPage() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Fixed height XML container */}
                   <div className="border rounded-lg overflow-auto w-[90vh]">
                     <div className="bg-muted p-2 flex justify-between items-center">
-                      <Badge variant="outline" className="text-xs">XML Document</Badge>
+                      <Badge variant="outline" className="text-xs">
+                        XML Document
+                      </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {conversion.xmlContent.length.toLocaleString()} characters
+                        {conversion.xmlContent.length.toLocaleString()}{" "}
+                        characters
                       </span>
                     </div>
                     <div className="relative">
                       <pre className="p-4 overflow-auto bg-zinc-950 text-zinc-100 text-sm h-64 leading-relaxed">
                         {searchText ? (
-                          <code dangerouslySetInnerHTML={highlightSearch(conversion.xmlContent)} />
+                          <code
+                            dangerouslySetInnerHTML={highlightSearch(
+                              conversion.xmlContent
+                            )}
+                          />
                         ) : (
-                          <code dangerouslySetInnerHTML={{ __html: colorizeXml(conversion.xmlContent) }} />
+                          <code
+                            dangerouslySetInnerHTML={{
+                              __html: colorizeXml(conversion.xmlContent),
+                            }}
+                          />
                         )}
                       </pre>
                     </div>
