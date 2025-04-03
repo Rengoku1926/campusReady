@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/middleware/auth.ts","./src/models/conversion.ts","./src/models/user.ts","./src/routes/auth.ts","./src/routes/conversion.ts","./src/routes/index.ts","./src/routes/user.ts","./src/services/pdfToXmlService.ts"],"version":"5.8.2"}

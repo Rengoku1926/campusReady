@@ -24,7 +24,8 @@ router.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, functio
         // Check if user already exists
         const existingUser = yield user_1.default.findByEmail(email);
         if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
+            res.status(400).json({ message: 'User already exists' });
+            return;
         }
         // Create new user
         const user = yield user_1.default.create({ name, email, password });
@@ -44,12 +45,14 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         // Check if user exists
         const user = yield user_1.default.findByEmail(email);
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            res.status(400).json({ message: 'Invalid credentials' });
+            return;
         }
-        // Check password
+        // Verify password
         const isMatch = yield bcrypt_1.default.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            res.status(400).json({ message: 'Invalid credentials' });
+            return;
         }
         // Generate JWT token
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
@@ -63,7 +66,7 @@ router.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
     catch (error) {
-        console.error(error);
+        console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 }));

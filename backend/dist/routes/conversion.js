@@ -62,10 +62,12 @@ router.get('/:id', auth_1.default, (req, res) => __awaiter(void 0, void 0, void 
     try {
         const conversion = yield conversion_1.default.findById(req.params.id);
         if (!conversion) {
-            return res.status(404).json({ message: 'Conversion not found' });
+            res.status(404).json({ message: 'Conversion not found' });
+            return;
         }
         if (conversion.userId !== ((_a = req.user) === null || _a === void 0 ? void 0 : _a.id)) {
-            return res.status(403).json({ message: 'Unauthorized' });
+            res.status(403).json({ message: 'Unauthorized' });
+            return;
         }
         res.json(conversion);
     }
@@ -79,7 +81,8 @@ router.post('/', auth_1.default, upload.single('file'), (req, res) => __awaiter(
     var _a;
     try {
         if (!req.file) {
-            return res.status(400).json({ message: 'No file uploaded' });
+            res.status(400).json({ message: 'No file uploaded' });
+            return;
         }
         const conversion = yield conversion_1.default.create({
             userId: (_a = req.user) === null || _a === void 0 ? void 0 : _a.id,
