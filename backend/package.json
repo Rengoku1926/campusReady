@@ -28,6 +28,7 @@
     "@types/xmldom": "^0.1.34",
     "prisma": "^6.5.0",
     "ts-node": "^10.9.2",
+    "tsc-watch": "^6.2.1",
     "typescript": "^5.8.2"
   },
   "dependencies": {
