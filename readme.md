@@ -1,5 +1,8 @@
 # PDF-to-XML Converter Web Application
 
+## Important:
+While visiting the live link for the first time, whether user wants to **signup or login** then he/she has to **wait max 50sec** as Free Web Service instance types will spin down after 15 minutes of inactivity and spin back up with a subsequent request - which can take a little time. This is noted in the docs: https://docs.render.com/free#spinning-down-on-idle
+
 ## Overview
 This project is a **PDF-to-XML Converter Web Application** built using **Next.js, TypeScript, Prisma, PostgreSQL, and Supabase**. The application supports **user authentication, file uploads, PDF parsing, XML conversion, and result storage**. It meets all core requirements and includes Level 1 and Level 2 features as outlined in the assignment.
 
