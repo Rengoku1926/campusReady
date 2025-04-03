@@ -30,7 +30,19 @@ This project is a **PDF-to-XML Converter Web Application** built using **Next.js
 - Uses **Supabase for database hosting**.
 - Configured **environment variables for secure deployment**.
 
-## Screenshots & Code Snippets
+## Assumptions & Limitations
+
+- The application currently **only supports single-page PDFs**. If a multi-page PDF is uploaded, the system will only retrieve the total number of pages without parsing the content beyond the first page.
+- The maximum allowed file size for uploads is **10MB**. Larger files will be rejected to maintain performance and prevent excessive resource usage.
+
+## Future Improvements
+
+To enhance the user experience and application functionality, the following improvements are planned:
+
+1. **Adding Toast Notifications** for better user feedback and improved UX.
+2. **Implementing Progress Indicators** to show file upload and conversion status.
+3. **Setting Up a CI/CD Pipeline** for automated deployment and testing.
+4. **Enhancing Accessibility Features** to improve usability for a diverse range of users.
 
 ### Application Screenshots
 
@@ -43,22 +55,14 @@ This project is a **PDF-to-XML Converter Web Application** built using **Next.js
 - User Profile
 ![alt text](frontend/public/cr_userProfile.png)
 
-### Code Snippets
-
-Insert code snippets for important parts of the application:
-- Authentication Logic
-- File Upload & Parsing
-- XML Conversion Function
-- API Route Implementation
 
 ## Local Setup Guide
 
 ### Prerequisites
 Ensure you have the following installed:
-- **Node.js (>=16.x.x)**
+- **Node.js (>=20.x.x)**
 - **PostgreSQL** (or use Supabase)
 - **Git**
-- **Docker** (optional for running PostgreSQL locally)
 
 ### Steps to Run Locally
 
@@ -78,8 +82,7 @@ Ensure you have the following installed:
    ```sh
    DATABASE_URL=<your_supabase_postgres_url>
    JWT_SECRET=<your_secret_key>
-   NEXT_PUBLIC_SUPABASE_URL=<your_supabase_url>
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_supabase_anon_key>
+   PORT=<PORT>
    ```
 
 4. **Run Database Migrations**
@@ -92,6 +95,32 @@ Ensure you have the following installed:
    npm run dev
    ```
    The application will be available at `http://localhost:3000`.
+
+## Approach to PDF-to-XML Conversion
+
+The application uses **pdf-parse** to extract text and metadata from uploaded PDF files. The extracted content undergoes a structured transformation into XML format, following these steps:
+
+1. **Extracting Text & Metadata**
+   - The system reads the PDF and extracts its text, title, author, and creation date.
+   - Page count is also retrieved for structured parsing.
+
+2. **Splitting Content into Pages**
+   - The extracted text is divided into pages based on the total number of pages.
+   - Each page's text is processed separately to maintain document structure.
+
+3. **Identifying Document Sections**
+   - Headers are detected using uppercase patterns.
+   - Lists are recognized based on bullet points or numbering.
+   - Paragraphs are formed from continuous text sections.
+
+4. **Generating XML Structure**
+   - Metadata is stored in an XML `<metadata>` section.
+   - Each page is represented by a `<page>` tag with nested `<header>`, `<paragraph>`, or `<list>` elements.
+   - Lists contain multiple `<item>` elements.
+
+5. **Final XML Serialization**
+   - The structured data is converted into XML format using **xmldom**.
+   - The final XML document is returned and stored in the database for user access.
 
 ## Deployment
 
@@ -116,5 +145,6 @@ This project meets the Level 1 & Level 2 requirements, implementing all core fun
 
 ---
 
-**Author:** [Your Name]  
+**Author:** Prateek Mahapatra
+**Email:** mahapatraprateekwork26@gmail.com
 **Date:** April 2025

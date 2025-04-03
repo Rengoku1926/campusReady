@@ -3,13 +3,15 @@ import axios from 'axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const FRONTEND_URI = process.env.NEXT_PUBLIC_FRONTEND_URI
+  const FRONTEND_URI = process.env.NEXT_PUBLIC_FRONTEND_URI;
  
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -17,16 +19,17 @@ export function FileUpload() {
       
       // Validate file type
       if (selectedFile.type !== 'application/pdf') {
-        
+        setErrorMessage("Only PDF files are allowed.");
         return;
       }
       
       // Validate file size (max 10MB)
       if (selectedFile.size > 10 * 1024 * 1024) {
-       
+        setErrorMessage("File size must be less than 10MB.");
         return;
       }
       
+      setErrorMessage("");
       setFile(selectedFile);
     }
   };
@@ -55,11 +58,9 @@ export function FileUpload() {
         },
       });
       
-     
       window.location.href = `/dashboard/conversions/results/${response.data.id}`;
     } catch (error: any) {
       console.error(error);
-     
     } finally {
       setIsUploading(false);
     }
@@ -105,6 +106,13 @@ export function FileUpload() {
               </label>
             </div>
           </div>
+          
+          {errorMessage && (
+            <Alert variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
           
           {file && (
             <div className="space-y-4">
