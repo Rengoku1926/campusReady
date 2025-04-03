@@ -7,7 +7,8 @@
     "dev": "ts-node src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "postinstall": "prisma generate"
   },
   "author": "",
   "license": "ISC",
