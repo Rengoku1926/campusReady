@@ -11,14 +11,15 @@ interface AuthRequestBody {
 }
 
 // Register a new user
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response) : Promise<void> =>  {
     try {
       const { name, email, password }: { name: string; email: string; password: string } = req.body;
   
       // Check if user already exists
       const existingUser = await User.findByEmail(email);
       if (existingUser) {
-        return res.status(400).json({ message: 'User already exists' });
+        res.status(400).json({ message: 'User already exists' });
+        return 
       }
   
       // Create new user
@@ -40,20 +41,22 @@ router.post('/register', async (req: Request, res: Response) => {
   
 
 // Login user
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', async (req: Request, res: Response) : Promise<void> =>  {
   try {
     const { email, password }: AuthRequestBody = req.body;
     
     // Check if user exists
     const user = await User.findByEmail(email);
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      res.status(400).json({ message: 'Invalid credentials' });
+      return 
     }
     
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      res.status(400).json({ message: 'Invalid credentials' });
+      return 
     }
     
     // Generate JWT token
